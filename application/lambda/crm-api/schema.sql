@@ -19,3 +19,15 @@ CREATE TABLE IF NOT EXISTS leads (
     status VARCHAR(50) DEFAULT 'new',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS opportunities (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    customer_id INTEGER,
+    amount NUMERIC(12,2),
+    stage VARCHAR(100) DEFAULT 'prospecting',
+    probability INTEGER DEFAULT 0,
+    expected_close_date DATE,
+    description TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
