@@ -106,6 +106,25 @@ def lambda_handler(event, context):
 
             connection.commit()
 
+            # Create orders table if it does not exist
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS orders (
+                    id SERIAL PRIMARY KEY,
+                    customer_id INTEGER,
+                    opportunity_id INTEGER,
+                    order_number VARCHAR(100) UNIQUE NOT NULL,
+                    total_amount NUMERIC(12,2),
+                    status VARCHAR(50) DEFAULT 'pending',
+                    order_date DATE DEFAULT CURRENT_DATE,
+                    notes TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+                """
+            )
+
+            connection.commit()
+
             # POST /opportunities
             if method == "POST" and path == "/opportunities":
                 body = json.loads(event.get("body") or "{}")
@@ -160,6 +179,104 @@ def lambda_handler(event, context):
                 return response(201, {
                     "message": "Opportunity created successfully",
                     "opportunity_id": opportunity_id
+                })
+
+                        # POST /orders
+            if method == "POST" and path == "/orders":
+                body = json.loads(event.get("body") or "{}")
+
+                customer_id = body.get("customer_id")
+                opportunity_id = body.get("opportunity_id")
+                order_number = body.get("order_number")
+                total_amount = body.get("total_amount")
+                status = body.get("status", "pending")
+                order_date = body.get("order_date")
+                notes = body.get("notes")
+
+                if not order_number:
+                    connection.close()
+
+                    return response(400, {
+                        "error": "order_number is required"
+                    })
+
+                cursor.execute(
+                    """
+                    INSERT INTO orders
+                        (
+                            customer_id,
+                            opportunity_id,
+                            order_number,
+                            total_amount,
+                            status,
+                            order_date,
+                            notes
+                        )
+                    VALUES
+                        (%s, %s, %s, %s, %s, COALESCE(%s, CURRENT_DATE), %s)
+                    RETURNING id;
+                    """,
+                    (
+                        customer_id,
+                        opportunity_id,
+                        order_number,
+                        total_amount,
+                        status,
+                        order_date,
+                        notes
+                    )
+                )
+
+                order_id = cursor.fetchone()[0]
+
+                connection.commit()
+                connection.close()
+
+                return response(201, {
+                    "message": "Order created successfully",
+                    "order_id": order_id
+                })
+
+                        # GET /orders
+            if method == "GET" and path == "/orders":
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        customer_id,
+                        opportunity_id,
+                        order_number,
+                        total_amount,
+                        status,
+                        order_date,
+                        notes,
+                        created_at
+                    FROM orders
+                    ORDER BY id;
+                    """
+                )
+
+                rows = cursor.fetchall()
+
+                orders = [
+                    {
+                        "id": row[0],
+                        "customer_id": row[1],
+                        "opportunity_id": row[2],
+                        "order_number": row[3],
+                        "total_amount": float(row[4]) if row[4] is not None else None,
+                        "status": row[5],
+                        "order_date": row[6].isoformat() if row[6] else None,
+                        "notes": row[7],
+                        "created_at": row[8].isoformat() if row[8] else None
+                    }
+                    for row in rows
+                ]
+
+                connection.close()
+
+                return response(200, {
+                    "orders": orders
                 })
 
                         # GET /opportunities

@@ -31,3 +31,14 @@ CREATE TABLE IF NOT EXISTS opportunities (
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE IF NOT EXISTS orders (
+    id SERIAL PRIMARY KEY,
+    customer_id INTEGER,
+    opportunity_id INTEGER,
+    order_number VARCHAR(100) UNIQUE NOT NULL,
+    total_amount NUMERIC(12,2),
+    status VARCHAR(50) DEFAULT 'pending',
+    order_date DATE DEFAULT CURRENT_DATE,
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

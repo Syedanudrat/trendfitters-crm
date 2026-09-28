@@ -99,6 +99,20 @@ resource "aws_apigatewayv2_route" "opportunities_get" {
   target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
 }
 
+resource "aws_apigatewayv2_route" "orders" {
+  api_id = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "POST /orders"
+  target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "orders_get" {
+  api_id = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "GET /orders"
+  target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
+
 resource "aws_apigatewayv2_route" "leads_get" {
   api_id = aws_apigatewayv2_api.crm_api.id
 
