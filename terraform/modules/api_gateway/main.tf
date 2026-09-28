@@ -147,3 +147,19 @@ resource "aws_apigatewayv2_route" "customer_history_get" {
   route_key = "GET /customer-history"
   target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
 }
+
+resource "aws_apigatewayv2_route" "tasks" {
+  api_id = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "POST /tasks"
+
+  target = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "tasks_get" {
+  api_id = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "GET /tasks"
+
+  target = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}

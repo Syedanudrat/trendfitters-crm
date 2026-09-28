@@ -444,7 +444,116 @@ def lambda_handler(event, context):
                 """
             )
 
+                        # Create tasks table if it does not exist
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS tasks (
+                    id SERIAL PRIMARY KEY,
+                    customer_id INTEGER,
+                    title VARCHAR(255) NOT NULL,
+                    description TEXT,
+                    status VARCHAR(50) DEFAULT 'pending',
+                    priority VARCHAR(50) DEFAULT 'medium',
+                    due_date DATE,
+                    assigned_to VARCHAR(255),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+                """
+            )
+
             connection.commit()
+
+            connection.commit()
+
+                        # POST /tasks
+            if method == "POST" and path == "/tasks":
+                body = json.loads(event.get("body") or "{}")
+
+                customer_id = body.get("customer_id")
+                title = body.get("title")
+                description = body.get("description")
+                status = body.get("status", "pending")
+                priority = body.get("priority", "medium")
+                due_date = body.get("due_date")
+                assigned_to = body.get("assigned_to")
+
+                if not title:
+                    connection.close()
+
+                    return response(400, {
+                        "error": "title is required"
+                    })
+
+                cursor.execute(
+                    """
+                    INSERT INTO tasks
+                        (customer_id, title, description, status, priority, due_date, assigned_to)
+                    VALUES
+                        (%s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id;
+                    """,
+                    (
+                        customer_id,
+                        title,
+                        description,
+                        status,
+                        priority,
+                        due_date,
+                        assigned_to
+                    )
+                )
+
+                task_id = cursor.fetchone()[0]
+
+                connection.commit()
+                connection.close()
+
+                return response(201, {
+                    "message": "Task created successfully",
+                    "task_id": task_id
+                })
+
+            # GET /tasks
+            if method == "GET" and path == "/tasks":
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        customer_id,
+                        title,
+                        description,
+                        status,
+                        priority,
+                        due_date,
+                        assigned_to,
+                        created_at
+                    FROM tasks
+                    ORDER BY id;
+                    """
+                )
+
+                rows = cursor.fetchall()
+
+                tasks = [
+                    {
+                        "id": row[0],
+                        "customer_id": row[1],
+                        "title": row[2],
+                        "description": row[3],
+                        "status": row[4],
+                        "priority": row[5],
+                        "due_date": row[6].isoformat() if row[6] else None,
+                        "assigned_to": row[7],
+                        "created_at": row[8].isoformat() if row[8] else None
+                    }
+                    for row in rows
+                ]
+
+                connection.close()
+
+                return response(200, {
+                    "tasks": tasks
+                })
 
             # POST /customer-history
             if method == "POST" and path == "/customer-history":
