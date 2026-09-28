@@ -22,6 +22,41 @@ resource "aws_apigatewayv2_route" "health" {
   target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
 }
 
+resource "aws_apigatewayv2_route" "customers" {
+  api_id    = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "POST /customers"
+  target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "customers_get" {
+  api_id = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "GET /customers"
+  target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "customer_by_id" {
+  api_id = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "GET /customers/{id}"
+  target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "customer_delete" {
+  api_id = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "DELETE /customers/{id}"
+  target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "customer_update" {
+  api_id = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "PUT /customers/{id}"
+  target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
+
 resource "aws_apigatewayv2_stage" "default" {
   api_id = aws_apigatewayv2_api.crm_api.id
 
