@@ -1,0 +1,1 @@
+{"statusCode": 200, "headers": {"Content-Type": "application/json"}, "body": "{\"message\": \"TrendFitters CRM API is running!\", \"service\": \"CRM\", \"status\": \"healthy\"}"}
