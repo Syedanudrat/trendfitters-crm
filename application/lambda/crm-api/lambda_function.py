@@ -34,6 +34,107 @@ def lambda_handler(event, context):
 
         with connection.cursor() as cursor:
 
+            # Create leads table if it does not exist
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS leads (
+                    id SERIAL PRIMARY KEY,
+                    first_name VARCHAR(100) NOT NULL,
+                    last_name VARCHAR(100),
+                    email VARCHAR(255),
+                    phone VARCHAR(50),
+                    company VARCHAR(255),
+                    source VARCHAR(100),
+                    status VARCHAR(50) DEFAULT 'new',
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+                """
+            )
+
+            connection.commit()
+
+            # GET /leads
+            if method == "GET" and path == "/leads":
+                cursor.execute(
+                    """
+                    SELECT id, first_name, last_name, email, phone, company,
+                        source, status, created_at
+                    FROM leads
+                    ORDER BY id;
+                    """
+                )
+
+                rows = cursor.fetchall()
+
+                leads = [
+                    {
+                        "id": row[0],
+                        "first_name": row[1],
+                        "last_name": row[2],
+                        "email": row[3],
+                        "phone": row[4],
+                        "company": row[5],
+                        "source": row[6],
+                        "status": row[7],
+                        "created_at": row[8].isoformat() if row[8] else None
+                    }
+                    for row in rows
+                ]
+
+                connection.close()
+
+                return response(200, {
+                    "leads": leads
+                })
+
+            # POST /leads
+            if method == "POST" and path == "/leads":
+                body = json.loads(event.get("body") or "{}")
+
+                first_name = body.get("first_name")
+                last_name = body.get("last_name")
+                email = body.get("email")
+                phone = body.get("phone")
+                company = body.get("company")
+                source = body.get("source")
+                status = body.get("status", "new")
+
+                if not first_name:
+                    connection.close()
+
+                    return response(400, {
+                        "error": "first_name is required"
+                    })
+
+                cursor.execute(
+                    """
+                    INSERT INTO leads
+                        (first_name, last_name, email, phone, company, source, status)
+                    VALUES
+                        (%s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id;
+                    """,
+                    (
+                        first_name,
+                        last_name,
+                        email,
+                        phone,
+                        company,
+                        source,
+                        status
+                    )
+                )
+
+                lead_id = cursor.fetchone()[0]
+
+                connection.commit()
+                connection.close()
+
+                return response(201, {
+                    "message": "Lead created successfully",
+                    "lead_id": lead_id
+                })
+
             # PUT /customers/{id}
             if method == "PUT" and path.startswith("/customers/"):
                 customer_id = event.get("pathParameters", {}).get("id")
@@ -98,7 +199,7 @@ def lambda_handler(event, context):
                     "message": "Customer updated successfully",
                     "customer_id": updated_customer[0]
                 })
-            
+
             # DELETE /customers/{id}
             if method == "DELETE" and path.startswith("/customers/"):
                 customer_id = event.get("pathParameters", {}).get("id")
@@ -174,7 +275,7 @@ def lambda_handler(event, context):
                     "company": row[5],
                     "created_at": row[6].isoformat() if row[6] else None
                 })
-            
+
             # GET /customers
             if method == "GET" and path == "/customers":
                 cursor.execute(
@@ -231,7 +332,13 @@ def lambda_handler(event, context):
                         (%s, %s, %s, %s, %s)
                     RETURNING id;
                     """,
-                    (first_name, last_name, email, phone, company)
+                    (
+                        first_name,
+                        last_name,
+                        email,
+                        phone,
+                        company
+                    )
                 )
 
                 customer_id = cursor.fetchone()[0]

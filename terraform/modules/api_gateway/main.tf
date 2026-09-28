@@ -77,3 +77,17 @@ resource "aws_lambda_permission" "api_gateway" {
 
   source_arn = "${aws_apigatewayv2_api.crm_api.execution_arn}/*/*"
 }
+
+resource "aws_apigatewayv2_route" "leads" {
+  api_id = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "POST /leads"
+  target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "leads_get" {
+  api_id = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "GET /leads"
+  target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
