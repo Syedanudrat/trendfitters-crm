@@ -321,6 +321,115 @@ def lambda_handler(event, context):
                     "opportunities": opportunities
                 })
 
+                        # Create contacts table if it does not exist
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS contacts (
+                    id SERIAL PRIMARY KEY,
+                    customer_id INTEGER NOT NULL,
+                    first_name VARCHAR(100) NOT NULL,
+                    last_name VARCHAR(100),
+                    email VARCHAR(255),
+                    phone VARCHAR(50),
+                    job_title VARCHAR(150),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+                """
+            )
+
+            connection.commit()
+
+            # POST /contacts
+            if method == "POST" and path == "/contacts":
+                body = json.loads(event.get("body") or "{}")
+
+                customer_id = body.get("customer_id")
+                first_name = body.get("first_name")
+                last_name = body.get("last_name")
+                email = body.get("email")
+                phone = body.get("phone")
+                job_title = body.get("job_title")
+
+                if not customer_id:
+                    connection.close()
+                    return response(400, {
+                        "error": "customer_id is required"
+                    })
+
+                if not first_name:
+                    connection.close()
+                    return response(400, {
+                        "error": "first_name is required"
+                    })
+
+                cursor.execute(
+                    """
+                    INSERT INTO contacts
+                        (customer_id, first_name, last_name, email, phone, job_title)
+                    VALUES
+                        (%s, %s, %s, %s, %s, %s)
+                    RETURNING id;
+                    """,
+                    (
+                        customer_id,
+                        first_name,
+                        last_name,
+                        email,
+                        phone,
+                        job_title
+                    )
+                )
+
+                contact_id = cursor.fetchone()[0]
+
+                connection.commit()
+                connection.close()
+
+                return response(201, {
+                    "message": "Contact created successfully",
+                    "contact_id": contact_id
+                })
+
+            # GET /contacts
+            if method == "GET" and path == "/contacts":
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        customer_id,
+                        first_name,
+                        last_name,
+                        email,
+                        phone,
+                        job_title,
+                        created_at
+                    FROM contacts
+                    ORDER BY id;
+                    """
+                )
+
+                rows = cursor.fetchall()
+
+                contacts = [
+                    {
+                        "id": row[0],
+                        "customer_id": row[1],
+                        "first_name": row[2],
+                        "last_name": row[3],
+                        "email": row[4],
+                        "phone": row[5],
+                        "job_title": row[6],
+                        "created_at": row[7].isoformat() if row[7] else None
+                    }
+                    for row in rows
+                ]
+
+                connection.close()
+
+                return response(200, {
+                    "contacts": contacts
+                })
+
             # POST /leads
             if method == "POST" and path == "/leads":
                 body = json.loads(event.get("body") or "{}")

@@ -119,3 +119,17 @@ resource "aws_apigatewayv2_route" "leads_get" {
   route_key = "GET /leads"
   target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
 }
+
+resource "aws_apigatewayv2_route" "contacts" {
+  api_id = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "POST /contacts"
+  target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "contacts_get" {
+  api_id = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "GET /contacts"
+  target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
