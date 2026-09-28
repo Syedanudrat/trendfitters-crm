@@ -430,6 +430,105 @@ def lambda_handler(event, context):
                     "contacts": contacts
                 })
 
+                        # Create customer history table if it does not exist
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS customer_history (
+                    id SERIAL PRIMARY KEY,
+                    customer_id INTEGER NOT NULL,
+                    activity_type VARCHAR(100) NOT NULL,
+                    description TEXT,
+                    activity_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+                """
+            )
+
+            connection.commit()
+
+            # POST /customer-history
+            if method == "POST" and path == "/customer-history":
+                body = json.loads(event.get("body") or "{}")
+
+                customer_id = body.get("customer_id")
+                activity_type = body.get("activity_type")
+                description = body.get("description")
+
+                if not customer_id:
+                    connection.close()
+
+                    return response(400, {
+                        "error": "customer_id is required"
+                    })
+
+                if not activity_type:
+                    connection.close()
+
+                    return response(400, {
+                        "error": "activity_type is required"
+                    })
+
+                cursor.execute(
+                    """
+                    INSERT INTO customer_history
+                        (customer_id, activity_type, description)
+                    VALUES
+                        (%s, %s, %s)
+                    RETURNING id;
+                    """,
+                    (
+                        customer_id,
+                        activity_type,
+                        description
+                    )
+                )
+
+                history_id = cursor.fetchone()[0]
+
+                connection.commit()
+                connection.close()
+
+                return response(201, {
+                    "message": "Customer history created successfully",
+                    "history_id": history_id
+                })
+
+            # GET /customer-history
+            if method == "GET" and path == "/customer-history":
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        customer_id,
+                        activity_type,
+                        description,
+                        activity_date,
+                        created_at
+                    FROM customer_history
+                    ORDER BY id;
+                    """
+                )
+
+                rows = cursor.fetchall()
+
+                history = [
+                    {
+                        "id": row[0],
+                        "customer_id": row[1],
+                        "activity_type": row[2],
+                        "description": row[3],
+                        "activity_date": row[4].isoformat() if row[4] else None,
+                        "created_at": row[5].isoformat() if row[5] else None
+                    }
+                    for row in rows
+                ]
+
+                connection.close()
+
+                return response(200, {
+                    "history": history
+                })
+
             # POST /leads
             if method == "POST" and path == "/leads":
                 body = json.loads(event.get("body") or "{}")

@@ -53,3 +53,12 @@ CREATE TABLE IF NOT EXISTS contacts (
     job_title VARCHAR(150),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS customer_history (
+    id SERIAL PRIMARY KEY,
+    customer_id INTEGER NOT NULL,
+    activity_type VARCHAR(100) NOT NULL,
+    description TEXT,
+    activity_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
