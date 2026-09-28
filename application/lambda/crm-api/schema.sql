@@ -85,3 +85,15 @@ CREATE TABLE IF NOT EXISTS follow_ups (
     assigned_to VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS activities (
+    id SERIAL PRIMARY KEY,
+    customer_id INTEGER,
+    task_id INTEGER,
+    activity_type VARCHAR(100) NOT NULL,
+    subject VARCHAR(255),
+    description TEXT,
+    activity_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

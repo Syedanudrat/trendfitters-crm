@@ -481,6 +481,113 @@ def lambda_handler(event, context):
                 """
             )
 
+                        # Create activities table if it does not exist
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS activities (
+                    id SERIAL PRIMARY KEY,
+                    customer_id INTEGER,
+                    task_id INTEGER,
+                    activity_type VARCHAR(100) NOT NULL,
+                    subject VARCHAR(255),
+                    description TEXT,
+                    activity_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    created_by VARCHAR(255),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+                """
+            )
+
+                        # POST /activities
+            if method == "POST" and path == "/activities":
+                body = json.loads(event.get("body") or "{}")
+
+                customer_id = body.get("customer_id")
+                task_id = body.get("task_id")
+                activity_type = body.get("activity_type")
+                subject = body.get("subject")
+                description = body.get("description")
+                activity_date = body.get("activity_date")
+                created_by = body.get("created_by")
+
+                if not activity_type:
+                    connection.close()
+
+                    return response(400, {
+                        "error": "activity_type is required"
+                    })
+
+                cursor.execute(
+                    """
+                    INSERT INTO activities
+                        (customer_id, task_id, activity_type, subject, description, activity_date, created_by)
+                    VALUES
+                        (%s, %s, %s, %s, %s, %s, %s)
+                    RETURNING id;
+                    """,
+                    (
+                        customer_id,
+                        task_id,
+                        activity_type,
+                        subject,
+                        description,
+                        activity_date,
+                        created_by
+                    )
+                )
+
+                activity_id = cursor.fetchone()[0]
+
+                connection.commit()
+                connection.close()
+
+                return response(201, {
+                    "message": "Activity created successfully",
+                    "activity_id": activity_id
+                })
+
+            # GET /activities
+            if method == "GET" and path == "/activities":
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        customer_id,
+                        task_id,
+                        activity_type,
+                        subject,
+                        description,
+                        activity_date,
+                        created_by,
+                        created_at
+                    FROM activities
+                    ORDER BY id;
+                    """
+                )
+
+                rows = cursor.fetchall()
+
+                activities = [
+                    {
+                        "id": row[0],
+                        "customer_id": row[1],
+                        "task_id": row[2],
+                        "activity_type": row[3],
+                        "subject": row[4],
+                        "description": row[5],
+                        "activity_date": row[6].isoformat() if row[6] else None,
+                        "created_by": row[7],
+                        "created_at": row[8].isoformat() if row[8] else None
+                    }
+                    for row in rows
+                ]
+
+                connection.close()
+
+                return response(200, {
+                    "activities": activities
+                })
+            
                         # POST /follow-ups
             if method == "POST" and path == "/follow-ups":
                 body = json.loads(event.get("body") or "{}")

@@ -179,3 +179,19 @@ resource "aws_apigatewayv2_route" "follow_ups_get" {
 
   target = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
 }
+
+resource "aws_apigatewayv2_route" "activities" {
+  api_id = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "POST /activities"
+
+  target = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "activities_get" {
+  api_id = aws_apigatewayv2_api.crm_api.id
+
+  route_key = "GET /activities"
+
+  target = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
