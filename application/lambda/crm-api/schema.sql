@@ -74,3 +74,14 @@ CREATE TABLE IF NOT EXISTS tasks (
     assigned_to VARCHAR(255),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS follow_ups (
+    id SERIAL PRIMARY KEY,
+    customer_id INTEGER,
+    task_id INTEGER,
+    follow_up_date DATE,
+    notes TEXT,
+    status VARCHAR(50) DEFAULT 'pending',
+    assigned_to VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

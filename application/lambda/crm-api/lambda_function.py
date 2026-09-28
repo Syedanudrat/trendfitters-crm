@@ -465,6 +465,101 @@ def lambda_handler(event, context):
 
             connection.commit()
 
+                        # Create follow-ups table if it does not exist
+            cursor.execute(
+                """
+                CREATE TABLE IF NOT EXISTS follow_ups (
+                    id SERIAL PRIMARY KEY,
+                    customer_id INTEGER,
+                    task_id INTEGER,
+                    follow_up_date DATE,
+                    notes TEXT,
+                    status VARCHAR(50) DEFAULT 'pending',
+                    assigned_to VARCHAR(255),
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+                """
+            )
+
+                        # POST /follow-ups
+            if method == "POST" and path == "/follow-ups":
+                body = json.loads(event.get("body") or "{}")
+
+                customer_id = body.get("customer_id")
+                task_id = body.get("task_id")
+                follow_up_date = body.get("follow_up_date")
+                notes = body.get("notes")
+                status = body.get("status", "pending")
+                assigned_to = body.get("assigned_to")
+
+                cursor.execute(
+                    """
+                    INSERT INTO follow_ups
+                        (customer_id, task_id, follow_up_date, notes, status, assigned_to)
+                    VALUES
+                        (%s, %s, %s, %s, %s, %s)
+                    RETURNING id;
+                    """,
+                    (
+                        customer_id,
+                        task_id,
+                        follow_up_date,
+                        notes,
+                        status,
+                        assigned_to
+                    )
+                )
+
+                follow_up_id = cursor.fetchone()[0]
+
+                connection.commit()
+                connection.close()
+
+                return response(201, {
+                    "message": "Follow-up created successfully",
+                    "follow_up_id": follow_up_id
+                })
+
+            # GET /follow-ups
+            if method == "GET" and path == "/follow-ups":
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        customer_id,
+                        task_id,
+                        follow_up_date,
+                        notes,
+                        status,
+                        assigned_to,
+                        created_at
+                    FROM follow_ups
+                    ORDER BY id;
+                    """
+                )
+
+                rows = cursor.fetchall()
+
+                follow_ups = [
+                    {
+                        "id": row[0],
+                        "customer_id": row[1],
+                        "task_id": row[2],
+                        "follow_up_date": row[3].isoformat() if row[3] else None,
+                        "notes": row[4],
+                        "status": row[5],
+                        "assigned_to": row[6],
+                        "created_at": row[7].isoformat() if row[7] else None
+                    }
+                    for row in rows
+                ]
+
+                connection.close()
+
+                return response(200, {
+                    "follow_ups": follow_ups
+                })
+
                         # POST /tasks
             if method == "POST" and path == "/tasks":
                 body = json.loads(event.get("body") or "{}")
