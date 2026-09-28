@@ -22,3 +22,13 @@ output "crm_db_port" {
   description = "RDS PostgreSQL port"
   value       = module.rds.db_instance_port
 }
+
+output "frontend_bucket_name" {
+  description = "S3 bucket used for the Trend Fitters CRM frontend"
+  value       = module.frontend.frontend_bucket_name
+}
+
+output "frontend_website_endpoint" {
+  description = "Trend Fitters CRM frontend website endpoint"
+  value       = module.frontend.frontend_website_endpoint
+}

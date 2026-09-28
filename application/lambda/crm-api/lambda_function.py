@@ -34,6 +34,44 @@ def lambda_handler(event, context):
 
         with connection.cursor() as cursor:
 
+                        # GET /reports/summary
+            if method == "GET" and path == "/reports/summary":
+
+                cursor.execute("""
+                    SELECT
+                        (SELECT COUNT(*) FROM customers) AS total_customers,
+                        (SELECT COUNT(*) FROM leads) AS total_leads,
+                        (SELECT COUNT(*) FROM opportunities) AS total_opportunities,
+                        (SELECT COUNT(*) FROM orders) AS total_orders,
+                        (SELECT COALESCE(SUM(total_amount), 0) FROM orders) AS total_order_value,
+                        (SELECT COUNT(*) FROM contacts) AS total_contacts,
+                        (SELECT COUNT(*) FROM customer_history) AS total_history_records,
+                        (SELECT COUNT(*) FROM tasks) AS total_tasks,
+                        (SELECT COUNT(*) FROM follow_ups) AS total_follow_ups,
+                        (SELECT COUNT(*) FROM activities) AS total_activities;
+                """)
+
+                row = cursor.fetchone()
+
+                report = {
+                    "total_customers": row[0],
+                    "total_leads": row[1],
+                    "total_opportunities": row[2],
+                    "total_orders": row[3],
+                    "total_order_value": float(row[4]),
+                    "total_contacts": row[5],
+                    "total_history_records": row[6],
+                    "total_tasks": row[7],
+                    "total_follow_ups": row[8],
+                    "total_activities": row[9]
+                }
+
+                connection.close()
+
+                return response(200, {
+                    "report": report
+                })
+
             # Create leads table if it does not exist
             cursor.execute(
                 """

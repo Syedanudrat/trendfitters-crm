@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Trend Fitters CRM - Reporting</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        header {
+            background: #1f2937;
+            color: white;
+            padding: 24px;
+        }
+
+        header h1 {
+            margin: 0 0 8px;
+        }
+
+        header p {
+            margin: 0;
+            color: #d1d5db;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .actions {
+            margin-bottom: 25px;
+        }
+
+        button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            background: #2563eb;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        #status {
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 22px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h3 {
+            margin: 0 0 12px;
+            font-size: 16px;
+            color: #6b7280;
+        }
+
+        .value {
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .money {
+            font-size: 26px;
+        }
+
+        @media (max-width: 600px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Trend Fitters CRM</h1>
+    <p>Reporting Dashboard</p>
+</header>
+
+<div class="container">
+
+    <div class="actions">
+        <button onclick="loadReport()">Refresh Report</button>
+        <div id="status">Loading report...</div>
+    </div>
+
+    <div class="dashboard">
+
+        <div class="card">
+            <h3>Total Customers</h3>
+            <div class="value" id="totalCustomers">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Total Leads</h3>
+            <div class="value" id="totalLeads">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Opportunities</h3>
+            <div class="value" id="totalOpportunities">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Total Orders</h3>
+            <div class="value" id="totalOrders">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Total Order Value</h3>
+            <div class="value money" id="totalOrderValue">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Total Contacts</h3>
+            <div class="value" id="totalContacts">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Customer History</h3>
+            <div class="value" id="totalHistory">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Total Tasks</h3>
+            <div class="value" id="totalTasks">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Follow-ups</h3>
+            <div class="value" id="totalFollowUps">0</div>
+        </div>
+
+        <div class="card">
+            <h3>Activities</h3>
+            <div class="value" id="totalActivities">0</div>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+const API_URL =
+    "https://q76je1b4i5.execute-api.ap-south-1.amazonaws.com";
+
+
+async function loadReport() {
+
+    const status = document.getElementById("status");
+
+    status.textContent = "Loading report...";
+
+    try {
+
+        const response = await fetch(
+            `${API_URL}/reports/summary`
+        );
+
+        if (!response.ok) {
+            throw new Error(
+                `API returned ${response.status}`
+            );
+        }
+
+        const data = await response.json();
+
+        const report = data.report;
+
+        document.getElementById("totalCustomers").textContent =
+            report.total_customers;
+
+        document.getElementById("totalLeads").textContent =
+            report.total_leads;
+
+        document.getElementById("totalOpportunities").textContent =
+            report.total_opportunities;
+
+        document.getElementById("totalOrders").textContent =
+            report.total_orders;
+
+        document.getElementById("totalOrderValue").textContent =
+            Number(report.total_order_value).toLocaleString();
+
+        document.getElementById("totalContacts").textContent =
+            report.total_contacts;
+
+        document.getElementById("totalHistory").textContent =
+            report.total_history_records;
+
+        document.getElementById("totalTasks").textContent =
+            report.total_tasks;
+
+        document.getElementById("totalFollowUps").textContent =
+            report.total_follow_ups;
+
+        document.getElementById("totalActivities").textContent =
+            report.total_activities;
+
+        status.textContent = "Report loaded successfully.";
+
+    } catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "Error connecting to API.";
+
+    }
+}
+
+
+loadReport();
+
+</script>
+
+</body>
+</html>

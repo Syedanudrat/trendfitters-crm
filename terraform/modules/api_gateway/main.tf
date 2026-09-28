@@ -2,6 +2,12 @@ resource "aws_apigatewayv2_api" "crm_api" {
   name          = "${var.project_name}-${var.environment}-api"
   protocol_type = "HTTP"
 
+  cors_configuration {
+    allow_origins = ["*"]
+    allow_methods = ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+    allow_headers = ["content-type"]
+  }
+
   tags = var.tags
 }
 
@@ -194,4 +200,10 @@ resource "aws_apigatewayv2_route" "activities_get" {
   route_key = "GET /activities"
 
   target = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
+}
+
+resource "aws_apigatewayv2_route" "get_reports_summary" {
+  api_id    = aws_apigatewayv2_api.crm_api.id
+  route_key = "GET /reports/summary"
+  target    = "integrations/${aws_apigatewayv2_integration.crm_lambda.id}"
 }

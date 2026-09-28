@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Trend Fitters CRM - Operations</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f6f8;
+            color: #222;
+        }
+
+        header {
+            background: #1f2937;
+            color: white;
+            padding: 20px 40px;
+        }
+
+        header h1 {
+            margin-bottom: 5px;
+        }
+
+        header p {
+            color: #d1d5db;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .section {
+            background: white;
+            padding: 25px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .section h2 {
+            margin-bottom: 20px;
+            color: #1f2937;
+        }
+
+        form {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        input,
+        select,
+        textarea,
+        button {
+            padding: 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: #f9fafb;
+        }
+
+        .message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            background: #ecfdf5;
+            color: #065f46;
+            display: none;
+        }
+
+        @media (max-width: 700px) {
+            form {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>Trend Fitters CRM</h1>
+    <p>Operations Module</p>
+</header>
+
+<div class="container">
+
+    <!-- TASKS -->
+
+    <div class="section">
+
+        <h2>Tasks</h2>
+
+        <form id="taskForm">
+
+            <input
+                type="number"
+                id="taskCustomerId"
+                placeholder="Customer ID"
+                required
+            >
+
+            <input
+                type="text"
+                id="taskTitle"
+                placeholder="Task title"
+                required
+            >
+
+            <textarea
+                id="taskDescription"
+                placeholder="Description"
+                class="full-width"
+            ></textarea>
+
+            <select id="taskStatus">
+                <option value="pending">Pending</option>
+                <option value="in-progress">In Progress</option>
+                <option value="completed">Completed</option>
+            </select>
+
+            <select id="taskPriority">
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+            </select>
+
+            <input
+                type="date"
+                id="taskDueDate"
+            >
+
+            <input
+                type="text"
+                id="taskAssignedTo"
+                placeholder="Assigned to"
+            >
+
+            <button type="submit" class="full-width">
+                Create Task
+            </button>
+
+        </form>
+
+        <div id="taskMessage" class="message"></div>
+
+        <button onclick="loadTasks()">
+            Refresh Tasks
+        </button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Priority</th>
+                    <th>Due Date</th>
+                    <th>Assigned To</th>
+                </tr>
+            </thead>
+
+            <tbody id="tasksTable"></tbody>
+        </table>
+
+    </div>
+
+
+    <!-- FOLLOW UPS -->
+
+    <div class="section">
+
+        <h2>Follow-ups</h2>
+
+        <form id="followUpForm">
+
+            <input
+                type="number"
+                id="followCustomerId"
+                placeholder="Customer ID"
+            >
+
+            <input
+                type="number"
+                id="followTaskId"
+                placeholder="Task ID"
+            >
+
+            <input
+                type="date"
+                id="followDate"
+            >
+
+            <input
+                type="text"
+                id="followAssignedTo"
+                placeholder="Assigned to"
+            >
+
+            <select id="followStatus">
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+            </select>
+
+            <textarea
+                id="followNotes"
+                placeholder="Follow-up notes"
+            ></textarea>
+
+            <button type="submit" class="full-width">
+                Create Follow-up
+            </button>
+
+        </form>
+
+        <div id="followMessage" class="message"></div>
+
+        <button onclick="loadFollowUps()">
+            Refresh Follow-ups
+        </button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Task</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Assigned To</th>
+                    <th>Notes</th>
+                </tr>
+            </thead>
+
+            <tbody id="followUpsTable"></tbody>
+        </table>
+
+    </div>
+
+
+    <!-- ACTIVITIES -->
+
+    <div class="section">
+
+        <h2>Activities</h2>
+
+        <form id="activityForm">
+
+            <input
+                type="number"
+                id="activityCustomerId"
+                placeholder="Customer ID"
+            >
+
+            <input
+                type="number"
+                id="activityTaskId"
+                placeholder="Task ID"
+            >
+
+            <input
+                type="text"
+                id="activityType"
+                placeholder="Activity type (call, email, meeting...)"
+                required
+            >
+
+            <input
+                type="text"
+                id="activitySubject"
+                placeholder="Subject"
+            >
+
+            <textarea
+                id="activityDescription"
+                placeholder="Description"
+                class="full-width"
+            ></textarea>
+
+            <input
+                type="datetime-local"
+                id="activityDate"
+            >
+
+            <input
+                type="text"
+                id="activityCreatedBy"
+                placeholder="Created by"
+            >
+
+            <button type="submit" class="full-width">
+                Create Activity
+            </button>
+
+        </form>
+
+        <div id="activityMessage" class="message"></div>
+
+        <button onclick="loadActivities()">
+            Refresh Activities
+        </button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Task</th>
+                    <th>Type</th>
+                    <th>Subject</th>
+                    <th>Date</th>
+                    <th>Created By</th>
+                </tr>
+            </thead>
+
+            <tbody id="activitiesTable"></tbody>
+        </table>
+
+    </div>
+
+</div>
+
+
+<script>
+
+    const API_URL =
+        "https://q76je1b4i5.execute-api.ap-south-1.amazonaws.com";
+
+
+    // =========================
+    // TASKS
+    // =========================
+
+    document
+        .getElementById("taskForm")
+        .addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+            const data = {
+                customer_id: Number(
+                    document.getElementById("taskCustomerId").value
+                ),
+
+                title:
+                    document.getElementById("taskTitle").value,
+
+                description:
+                    document.getElementById("taskDescription").value,
+
+                status:
+                    document.getElementById("taskStatus").value,
+
+                priority:
+                    document.getElementById("taskPriority").value,
+
+                due_date:
+                    document.getElementById("taskDueDate").value || null,
+
+                assigned_to:
+                    document.getElementById("taskAssignedTo").value
+            };
+
+            try {
+
+                const response = await fetch(
+                    `${API_URL}/tasks`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify(data)
+                    }
+                );
+
+                const result = await response.json();
+
+                showMessage(
+                    "taskMessage",
+                    result.message || result.error
+                );
+
+                loadTasks();
+
+            } catch (error) {
+
+                showMessage(
+                    "taskMessage",
+                    "Error connecting to API"
+                );
+
+                console.error(error);
+            }
+
+        });
+
+
+    async function loadTasks() {
+
+        try {
+
+            const response =
+                await fetch(`${API_URL}/tasks`);
+
+            const result =
+                await response.json();
+
+            const table =
+                document.getElementById("tasksTable");
+
+            table.innerHTML = "";
+
+            (result.tasks || []).forEach(task => {
+
+                table.innerHTML += `
+                    <tr>
+                        <td>${task.id}</td>
+                        <td>${task.customer_id || ""}</td>
+                        <td>${task.title}</td>
+                        <td>${task.status}</td>
+                        <td>${task.priority}</td>
+                        <td>${task.due_date || ""}</td>
+                        <td>${task.assigned_to || ""}</td>
+                    </tr>
+                `;
+
+            });
+
+        } catch (error) {
+
+            console.error(error);
+
+        }
+
+    }
+
+
+    // =========================
+    // FOLLOW UPS
+    // =========================
+
+    document
+        .getElementById("followUpForm")
+        .addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+            const data = {
+
+                customer_id:
+                    Number(
+                        document.getElementById("followCustomerId").value
+                    ) || null,
+
+                task_id:
+                    Number(
+                        document.getElementById("followTaskId").value
+                    ) || null,
+
+                follow_up_date:
+                    document.getElementById("followDate").value || null,
+
+                notes:
+                    document.getElementById("followNotes").value,
+
+                status:
+                    document.getElementById("followStatus").value,
+
+                assigned_to:
+                    document.getElementById("followAssignedTo").value
+
+            };
+
+            try {
+
+                const response = await fetch(
+                    `${API_URL}/follow-ups`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify(data)
+                    }
+                );
+
+                const result = await response.json();
+
+                showMessage(
+                    "followMessage",
+                    result.message || result.error
+                );
+
+                loadFollowUps();
+
+            } catch (error) {
+
+                showMessage(
+                    "followMessage",
+                    "Error connecting to API"
+                );
+
+                console.error(error);
+            }
+
+        });
+
+
+    async function loadFollowUps() {
+
+        try {
+
+            const response =
+                await fetch(`${API_URL}/follow-ups`);
+
+            const result =
+                await response.json();
+
+            const table =
+                document.getElementById("followUpsTable");
+
+            table.innerHTML = "";
+
+            (result.follow_ups || []).forEach(item => {
+
+                table.innerHTML += `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.customer_id || ""}</td>
+                        <td>${item.task_id || ""}</td>
+                        <td>${item.follow_up_date || ""}</td>
+                        <td>${item.status}</td>
+                        <td>${item.assigned_to || ""}</td>
+                        <td>${item.notes || ""}</td>
+                    </tr>
+                `;
+
+            });
+
+        } catch (error) {
+
+            console.error(error);
+
+        }
+
+    }
+
+
+    // =========================
+    // ACTIVITIES
+    // =========================
+
+    document
+        .getElementById("activityForm")
+        .addEventListener("submit", async function(event) {
+
+            event.preventDefault();
+
+            const data = {
+
+                customer_id:
+                    Number(
+                        document.getElementById("activityCustomerId").value
+                    ) || null,
+
+                task_id:
+                    Number(
+                        document.getElementById("activityTaskId").value
+                    ) || null,
+
+                activity_type:
+                    document.getElementById("activityType").value,
+
+                subject:
+                    document.getElementById("activitySubject").value,
+
+                description:
+                    document.getElementById("activityDescription").value,
+
+                activity_date:
+                    document.getElementById("activityDate").value || null,
+
+                created_by:
+                    document.getElementById("activityCreatedBy").value
+
+            };
+
+            try {
+
+                const response = await fetch(
+                    `${API_URL}/activities`,
+                    {
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+
+                        body: JSON.stringify(data)
+                    }
+                );
+
+                const result = await response.json();
+
+                showMessage(
+                    "activityMessage",
+                    result.message || result.error
+                );
+
+                loadActivities();
+
+            } catch (error) {
+
+                showMessage(
+                    "activityMessage",
+                    "Error connecting to API"
+                );
+
+                console.error(error);
+            }
+
+        });
+
+
+    async function loadActivities() {
+
+        try {
+
+            const response =
+                await fetch(`${API_URL}/activities`);
+
+            const result =
+                await response.json();
+
+            const table =
+                document.getElementById("activitiesTable");
+
+            table.innerHTML = "";
+
+            (result.activities || []).forEach(item => {
+
+                table.innerHTML += `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.customer_id || ""}</td>
+                        <td>${item.task_id || ""}</td>
+                        <td>${item.activity_type}</td>
+                        <td>${item.subject || ""}</td>
+                        <td>${item.activity_date || ""}</td>
+                        <td>${item.created_by || ""}</td>
+                    </tr>
+                `;
+
+            });
+
+        } catch (error) {
+
+            console.error(error);
+
+        }
+
+    }
+
+
+    // =========================
+    // MESSAGE
+    // =========================
+
+    function showMessage(elementId, message) {
+
+        const element =
+            document.getElementById(elementId);
+
+        element.textContent = message;
+
+        element.style.display = "block";
+
+        setTimeout(() => {
+
+            element.style.display = "none";
+
+        }, 3000);
+
+    }
+
+
+    // Load existing data when page opens
+
+    loadTasks();
+    loadFollowUps();
+    loadActivities();
+
+</script>
+
+</body>
+</html>
